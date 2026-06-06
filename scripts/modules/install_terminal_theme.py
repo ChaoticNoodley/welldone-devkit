@@ -1,16 +1,19 @@
 """
 Terminal Theme — instala Starship prompt + JetBrains Mono Nerd Font.
-Equivalente Linux do install_terminal_theme.ps1 (usa Starship no lugar de Oh My Posh).
+Equivalente Linux do install_terminal_theme.ps1
 """
 
 import os
 import shutil
 import subprocess
+import sys
+import termios
+import tty
 from pathlib import Path
 
 from scripts.utils.colors import *
 from scripts.utils.distro import install_package, resolve_package
-from scripts.utils.ui import confirm, pause, run_step, show_module_header
+from scripts.utils.ui import pause, run_step, show_module_header, term_width, draw_row, draw_divider, draw_bottom, draw_empty, show_header
 
 STARSHIP_CONFIG = """
 # WellDone Neon — Starship theme
@@ -76,19 +79,70 @@ style_user  = \"bold #00eaff\"
 format      = \"[$user]($style) in \"
 """
 
+TOOLS = [
+    {"id": "starship", "label": "Starship",              "desc": "Prompt moderno e rápido"},
+    {"id": "font",     "label": "JetBrains Mono Nerd Font", "desc": "Fonte com suporte a ícones"},
+    {"id": "theme",    "label": "Tema WellDone Neon",    "desc": "Configura o starship.toml com a paleta neon"},
+    {"id": "shell",    "label": "Configurar shell",      "desc": "Adiciona starship init no .bashrc / .zshrc / fish"},
+]
+
+
+def _getch() -> str:
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+        if ch == "\x1b":
+            ch += sys.stdin.read(2)
+        return ch
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+
+def _select_tools() -> list:
+    selected = [True] * len(TOOLS)
+    cursor = 0
+
+    while True:
+        os.system("clear")
+        w = term_width()
+        show_header("Terminal Theme — selecione o que instalar")
+
+        draw_empty(w)
+        for i, tool in enumerate(TOOLS):
+            is_cur = i == cursor
+            is_sel = selected[i]
+            check = f"{GREEN}[✓]{NC}" if is_sel else f"{GRAY}[ ]{NC}"
+            desc  = f"{GRAY}{tool['desc']}{NC}"
+            label = f"{BG_SELECT}{WHITE}{BOLD} {tool['label']}{NC}" if is_cur else f"{WHITE} {tool['label']}{NC}"
+            draw_row(f"  {check} {label}  {desc}", w)
+
+        draw_empty(w)
+        draw_divider(w)
+        draw_row(f"  {GRAY}[↑↓]  Navegar   [Espaço]  Marcar   [Enter]  Instalar   [Q]  Cancelar{NC}", w)
+        draw_bottom(w)
+
+        key = _getch()
+        if key in ("\x1b[A", "w", "W"):
+            cursor = (cursor - 1) % len(TOOLS)
+        elif key in ("\x1b[B", "s", "S"):
+            cursor = (cursor + 1) % len(TOOLS)
+        elif key == " ":
+            selected[cursor] = not selected[cursor]
+        elif key in ("\r", "\n"):
+            return [TOOLS[i] for i, s in enumerate(selected) if s]
+        elif key in ("q", "Q", "\x1b"):
+            return []
+
 
 def _install_starship(pm: dict):
     if shutil.which("starship"):
         return True
-
-    # Instalador de pacotes primeiro
     pkg = resolve_package("starship", pm)
     if pkg and not pkg.startswith("sh."):
-        result = install_package(pkg, pm)
-        if result:
+        if install_package(pkg, pm):
             return True
-
-    # Fallback
     print(f"  {GRAY}Instalando Starship via script oficial...{NC}")
     result = subprocess.run(
         ["bash", "-c", "curl -sS https://starship.rs/install.sh | sh -s -- -y"],
@@ -101,8 +155,6 @@ def _install_font(pm: dict):
     pkg = resolve_package("jetbrains-mono-nerd", pm)
     if pkg:
         return install_package(pkg, pm)
-
-    # Manual download do fallback
     print(f"  {YELLOW}Baixando JetBrainsMono Nerd Font manualmente...{NC}")
     fonts_dir = Path.home() / ".local/share/fonts"
     fonts_dir.mkdir(parents=True, exist_ok=True)
@@ -119,22 +171,18 @@ def _install_font(pm: dict):
 def _configure_starship():
     config_dir = Path.home() / ".config"
     config_dir.mkdir(parents=True, exist_ok=True)
-    config_file = config_dir / "starship.toml"
-    config_file.write_text(STARSHIP_CONFIG)
+    (config_dir / "starship.toml").write_text(STARSHIP_CONFIG)
     return True
 
 
 def _add_starship_to_shell():
-    """Adds starship init to the detected shell's rc file."""
     shell = os.environ.get("SHELL", "")
-    home = Path.home()
-
+    home  = Path.home()
     configs = {
         "bash": (home / ".bashrc",    'eval "$(starship init bash)"'),
         "zsh":  (home / ".zshrc",     'eval "$(starship init zsh)"'),
         "fish": (home / ".config/fish/config.fish", "starship init fish | source"),
     }
-
     for sh, (rc, line) in configs.items():
         if sh in shell:
             content = rc.read_text() if rc.exists() else ""
@@ -142,8 +190,6 @@ def _add_starship_to_shell():
                 with rc.open("a") as f:
                     f.write(f"\n# WellDone DevKit — Starship prompt\n{line}\n")
             return True
-
-    # Adiciona todos os arquivos rc comuns se o shell não for identificado
     for sh, (rc, line) in configs.items():
         if rc.exists():
             content = rc.read_text()
@@ -154,18 +200,26 @@ def _add_starship_to_shell():
 
 
 def run(pm: dict):
-    show_module_header("TERMINAL THEME — STARSHIP + NERD FONT")
+    show_module_header("TERMINAL THEME")
+
+    chosen = _select_tools()
+
+    if not chosen:
+        print(f"  {GRAY}Nenhuma ferramenta selecionada.{NC}")
+        pause()
+        return
+
+    ids = {t["id"] for t in chosen}
 
     print()
-    steps = [
-        ("Instalando Starship prompt",          lambda: _install_starship(pm)),
-        ("Instalando JetBrains Mono Nerd Font", lambda: _install_font(pm)),
-        ("Aplicando tema WellDone Neon",        _configure_starship),
-        ("Configurando shell",                  _add_starship_to_shell),
-    ]
-
-    for label, fn in steps:
-        run_step(label, fn)
+    if "starship" in ids:
+        run_step("Instalando Starship", lambda: _install_starship(pm))
+    if "font" in ids:
+        run_step("Instalando JetBrains Mono Nerd Font", lambda: _install_font(pm))
+    if "theme" in ids:
+        run_step("Aplicando tema WellDone Neon", _configure_starship)
+    if "shell" in ids:
+        run_step("Configurando shell", _add_starship_to_shell)
 
     print()
     print(f"  {GREEN}✓ Tema aplicado!{NC}")

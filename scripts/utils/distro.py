@@ -99,13 +99,17 @@ def require_sudo() -> str:
 
 
 def install_package(pkg_name: str, pm: dict) -> bool:
-    sudo = require_sudo()
+    # Apenas PMs de sistema precisam de sudo
+    # AUR helpers e flatpak gerenciam permissões internamente
+    needs_sudo = pm["cmd"] in {"pacman", "apt", "dnf", "yum", "zypper", "xbps-install", "apk"}
+
     cmd = []
-    if sudo:
-        cmd.append(sudo)
+    if needs_sudo and require_sudo():
+        cmd.append("sudo")
     cmd.append(pm["cmd"])
     cmd.extend(pm["install"])
     cmd.append(pkg_name)
+
     result = subprocess.run(cmd)
     return result.returncode == 0
 
@@ -113,10 +117,10 @@ def install_package(pkg_name: str, pm: dict) -> bool:
 def update_db(pm: dict) -> bool:
     if not pm.get("update"):
         return True
-    sudo = require_sudo()
+    needs_sudo = pm["cmd"] in {"pacman", "apt", "dnf", "yum", "zypper", "xbps-install", "apk"}
     cmd = []
-    if sudo:
-        cmd.append(sudo)
+    if needs_sudo and require_sudo():
+        cmd.append("sudo")
     cmd.append(pm["cmd"])
     cmd.extend(pm["update"])
     result = subprocess.run(cmd, capture_output=True)
