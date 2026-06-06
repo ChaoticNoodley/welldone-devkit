@@ -8,13 +8,13 @@
                ░▒▓  D E V K I T  v2.1  L I N U X  ▓▒░
 ```
 
-**Fork Linux do [WellDone DevKit](https://github.com/WellytonSdJ/welldone-devkit) — instalador interativo de ambiente de desenvolvimento para qualquer distribuição Linux.**
+**Fork Linux do [WellDone DevKit](https://github.com/WellytonSdJ/welldone-devkit): instalador interativo de ambiente de desenvolvimento para qualquer distribuição Linux.**
 
 ---
 
 ## O que é?
 
-**WellDone DevKit Linux** é um fork do projeto original (Windows/PowerShell) completamente reescrito em Python para rodar em qualquer distribuição Linux. Mantém o visual cyberpunk neon, navegação por teclado e os mesmos módulos — adaptados e expandidos para o ecossistema Linux.
+**WellDone DevKit Linux** é um fork do projeto original (Windows/PowerShell) completamente reescrito em Python para rodar em qualquer distribuição Linux. Mantém o visual cyberpunk neon, navegação por teclado e os mesmos módulos, adaptados e expandidos para o ecossistema Linux.
 
 > Configure um PC do zero em minutos, sem abrir navegador.
 
