@@ -47,7 +47,7 @@ Python 3 já vem instalado na maioria das distros modernas. Nenhuma dependência
 
 ```bash
 # Clone o repositório
-git clone https://github.com/<seu-usuario>/welldone-devkit
+git clone https://github.com/ChaoticNoodley/welldone-devkit
 cd welldone-devkit
 
 # Execute
