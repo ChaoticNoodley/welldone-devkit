@@ -1,3 +1,128 @@
+"""
+Detects the current Linux distribution and available package manager.
+Supports: pacman, yay, paru, apt, dnf, yum, zypper, xbps-install, apk, flatpak
+"""
+
+import shutil
+import subprocess
+from pathlib import Path
+
+
+def detect_distro() -> dict:
+    """Read /etc/os-release and return distro info."""
+    info = {}
+    try:
+        with open("/etc/os-release") as f:
+            for line in f:
+                line = line.strip()
+                if "=" in line:
+                    k, v = line.split("=", 1)
+                    info[k] = v.strip('"')
+    except FileNotFoundError:
+        pass
+    return info
+
+
+def detect_package_manager() -> dict | None:
+    managers = [
+        {
+            "name": "yay (AUR)", "cmd": "yay",
+            "install": ["-S", "--noconfirm"], "update": ["-Sy"],
+            "check": lambda pkg: _check_output(["yay", "-Qi", pkg]),
+        },
+        {
+            "name": "paru (AUR)", "cmd": "paru",
+            "install": ["-S", "--noconfirm"], "update": ["-Sy"],
+            "check": lambda pkg: _check_output(["paru", "-Qi", pkg]),
+        },
+        {
+            "name": "pacman", "cmd": "pacman",
+            "install": ["-S", "--noconfirm"], "update": ["-Sy"],
+            "check": lambda pkg: _check_output(["pacman", "-Qi", pkg]),
+        },
+        {
+            "name": "apt", "cmd": "apt",
+            "install": ["install", "-y"], "update": ["update"],
+            "check": lambda pkg: _check_output(["dpkg", "-s", pkg]),
+        },
+        {
+            "name": "dnf", "cmd": "dnf",
+            "install": ["install", "-y"], "update": ["check-update"],
+            "check": lambda pkg: _check_output(["rpm", "-q", pkg]),
+        },
+        {
+            "name": "yum", "cmd": "yum",
+            "install": ["install", "-y"], "update": ["check-update"],
+            "check": lambda pkg: _check_output(["rpm", "-q", pkg]),
+        },
+        {
+            "name": "zypper", "cmd": "zypper",
+            "install": ["install", "-y"], "update": ["refresh"],
+            "check": lambda pkg: _check_output(["rpm", "-q", pkg]),
+        },
+        {
+            "name": "xbps-install", "cmd": "xbps-install",
+            "install": ["-Sy"], "update": ["-S"],
+            "check": lambda pkg: _check_output(["xbps-query", pkg]),
+        },
+        {
+            "name": "apk", "cmd": "apk",
+            "install": ["add"], "update": ["update"],
+            "check": lambda pkg: _check_output(["apk", "info", "-e", pkg]),
+        },
+    ]
+
+    for mgr in managers:
+        if shutil.which(mgr["cmd"]):
+            return mgr
+
+    if shutil.which("flatpak"):
+        return {
+            "name": "flatpak", "cmd": "flatpak",
+            "install": ["install", "-y"], "update": ["update"],
+            "check": lambda pkg: False,
+        }
+
+    return None
+
+
+def _check_output(cmd: list) -> bool:
+    try:
+        result = subprocess.run(cmd, capture_output=True)
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def require_sudo() -> str:
+    return "sudo" if shutil.which("sudo") else ""
+
+
+def install_package(pkg_name: str, pm: dict) -> bool:
+    sudo = require_sudo()
+    cmd = []
+    if sudo:
+        cmd.append(sudo)
+    cmd.append(pm["cmd"])
+    cmd.extend(pm["install"])
+    cmd.append(pkg_name)
+    result = subprocess.run(cmd)
+    return result.returncode == 0
+
+
+def update_db(pm: dict) -> bool:
+    if not pm.get("update"):
+        return True
+    sudo = require_sudo()
+    cmd = []
+    if sudo:
+        cmd.append(sudo)
+    cmd.append(pm["cmd"])
+    cmd.extend(pm["update"])
+    result = subprocess.run(cmd, capture_output=True)
+    return result.returncode == 0
+
+
 PACKAGE_MAP = {
     "git": {
         "pacman": "git", "apt": "git", "dnf": "git",
@@ -94,3 +219,8 @@ PACKAGE_MAP = {
         "flatpak": "net.lutris.Lutris",
     },
 }
+
+
+def resolve_package(logical: str, pm: dict) -> str | None:
+    mapping = PACKAGE_MAP.get(logical, {})
+    return mapping.get(pm["name"]) or mapping.get(pm["cmd"])

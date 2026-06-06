@@ -94,16 +94,16 @@ Menu de seleção múltipla. Tenta instalar pelo PM nativo da sua distro primeir
 
 | App | Categoria | Disponibilidade nativa |
 |---|---|---|
-| Discord | Comunidade | AUR |
-| Spotify | Música | AUR |
+| Discord | Comunidade | AUR, Flatpak |
+| Spotify | Música | AUR, Flatpak |
 | Steam | Games | pacman, apt, dnf, zypper |
 | Epic Games | Games | Heroic (AUR) ou Lutris (pacman, apt, dnf, zypper) |
-| Postman | Dev Tools | AUR |
+| Postman | Dev Tools | AUR, Flatpak |
 | Hoppscotch | Dev Tools | CLI npm / AppImage / .deb |
-| Notion | Produtividade | AUR |
+| Notion | Produtividade | AUR, Flatpak |
 | Obsidian | Produtividade | pacman, dnf, AUR |
-| Microsoft Teams | Trabalho | AUR |
-| Opera GX | Browser | AUR |
+| Microsoft Teams | Trabalho | AUR, Flatpak |
+| Opera GX | Browser | AUR, Flatpak |
 | OpenClaude | Dev Tools | npm (Node.js instalado automaticamente se necessário) |
 
 ---
