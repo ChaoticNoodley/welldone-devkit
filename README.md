@@ -92,13 +92,21 @@ Configura a pasta de abertura automática do terminal:
 - Todo novo terminal já abre direto na pasta de trabalho
 
 ### Apps Opcionais
-Menu de seleção múltipla — instala via PM nativo ou flatpak:
-- **Discord** — comunicação
-- **Spotify** — música
-- **Steam** — jogos
-- **Postman** — cliente de API
-- **Notion** — produtividade
-- **OpenClaude** — interface open-source para Claude AI (via npm)
+Menu de seleção múltipla — instala via PM nativo primeiro, flatpak como fallback:
+
+| App | Categoria | Método |
+|---|---|---|
+| Discord | Comunidade | flatpak |
+| Spotify | Música | flatpak |
+| Steam | Games | PM nativo / flatpak |
+| Epic Games | Games | Heroic ou Lutris (você escolhe) |
+| Postman | Dev Tools | flatpak |
+| Hoppscotch | Dev Tools | CLI npm / AppImage / .deb (você escolhe) |
+| Notion | Produtividade | flatpak |
+| Obsidian | Produtividade | PM nativo / flatpak |
+| Microsoft Teams | Trabalho | PM nativo / flatpak |
+| Opera GX | Browser | PM nativo / flatpak |
+| OpenClaude | Dev Tools | npm (Node.js instalado automaticamente se necessário) |
 
 ---
 
