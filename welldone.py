@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from scripts.utils.colors import *
 from scripts.utils.distro import detect_distro, detect_package_manager
 from scripts.utils.ui import clear, pause, show_boot_screen, show_menu
+from scripts.modules import setup_start_folder
 
 from scripts.modules import (
     install_dev_essentials,
@@ -72,6 +73,7 @@ def main():
         {"label": "Apps Opcionais",   "action": lambda: install_optional_apps.run(pm)},
         {"separator": True},
         {"label": "Instalar Tudo",    "action": lambda: run_all(pm)},
+        {"label": "Pasta Inicial", "action": lambda: setup_start_folder.run(pm)},
     ]
 
     while True:

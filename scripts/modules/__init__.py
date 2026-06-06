@@ -5,3 +5,5 @@ from scripts.modules import (
     manage_ssh,
     setup_git,
 )
+
+from scripts.modules import setup_start_folder
