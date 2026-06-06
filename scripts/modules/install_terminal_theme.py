@@ -81,14 +81,14 @@ def _install_starship(pm: dict):
     if shutil.which("starship"):
         return True
 
-    # Try package manager first
+    # Instalador de pacotes primeiro
     pkg = resolve_package("starship", pm)
     if pkg and not pkg.startswith("sh."):
         result = install_package(pkg, pm)
         if result:
             return True
 
-    # Fallback: official install script
+    # Fallback
     print(f"  {GRAY}Instalando Starship via script oficial...{NC}")
     result = subprocess.run(
         ["bash", "-c", "curl -sS https://starship.rs/install.sh | sh -s -- -y"],
@@ -102,7 +102,7 @@ def _install_font(pm: dict):
     if pkg:
         return install_package(pkg, pm)
 
-    # Manual download fallback
+    # Manual download do fallback
     print(f"  {YELLOW}Baixando JetBrainsMono Nerd Font manualmente...{NC}")
     fonts_dir = Path.home() / ".local/share/fonts"
     fonts_dir.mkdir(parents=True, exist_ok=True)
@@ -143,7 +143,7 @@ def _add_starship_to_shell():
                     f.write(f"\n# WellDone DevKit — Starship prompt\n{line}\n")
             return True
 
-    # Add to all common rc files if shell not identified
+    # Adiciona todos os arquivos rc comuns se o shell não for identificado
     for sh, (rc, line) in configs.items():
         if rc.exists():
             content = rc.read_text()
