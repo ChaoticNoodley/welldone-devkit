@@ -198,7 +198,7 @@ def _install_hoppscotch(pm: dict) -> bool:
     return False
 
 
-ddef _install_openclaude() -> bool:
+def _install_openclaude() -> bool:
     if not shutil.which("npm"):
         print(f"\n  {YELLOW}npm não encontrado. Instalando Node.js via nvm...{NC}\n")
         r = subprocess.run(
