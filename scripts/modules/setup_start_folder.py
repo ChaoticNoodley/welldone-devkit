@@ -21,15 +21,22 @@ def run(pm: dict):
 
     # Reseta o terminal para modo normal antes de pedir input
     os.system("stty sane")
+import sys, termios
+termios.tcflush(sys.stdin, termios.TCIFLUSH)  # limpa o buffer antes de pedir input
 
-    default = str(Path.home() / "Projetos")
-    print(f"  {YELLOW}Pasta padrão sugerida: {WHITE}{default}{NC}")
-    print(f"  {GRAY}(pressione Enter para aceitar ou digite outro caminho){NC}")
-    print()
+print()
+default = str(Path.home() / "Projetos")
+print(f"  {YELLOW}Pasta padrão sugerida: {WHITE}{default}{NC}")
+print(f"  {GRAY}(pressione Enter para aceitar ou digite outro caminho){NC}")
+print()
 
-    folder = ask("Pasta inicial")
-    if not folder:
-        folder = default
+folder = ask("Pasta inicial")
+if not folder:
+    folder = default
+
+# Validação extra — rejeita caminhos relativos curtos suspeitos
+if len(folder) < 3 or not folder.startswith("/"):
+    folder = default
 
     folder = os.path.expanduser(folder)
 
