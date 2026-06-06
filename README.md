@@ -14,7 +14,7 @@
 
 ## O que é?
 
-**WellDone DevKit Linux** é um fork do projeto original (Windows/PowerShell) reescrito em Python para rodar em qualquer distribuição Linux. Mantém o visual cyberpunk neon, navegação por teclado e os mesmos módulos — adaptados para o ecossistema Linux.
+**WellDone DevKit Linux** é um fork do projeto original (Windows/PowerShell) reescrito em Python para rodar em qualquer distribuição Linux. Mantém o visual cyberpunk neon, navegação por teclado e os mesmos módulos, adaptados para o ecossistema Linux.
 
 ---
 
